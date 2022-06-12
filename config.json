@@ -1,0 +1,122 @@
+{
+    "stats": {},
+    "api": {
+        "services": [
+            "HandlerService",
+            "LoggerService",
+            "StatsService"
+        ],
+        "tag": "api"
+    },
+    "log": {
+        "loglevel": "warning",
+        "access": "/usr/local/etc/xray/xary_log/access.log",
+        "error": "/usr/local/etc/xray/xary_log/error.log"
+    },
+    "dns": {
+        "servers": [
+            "https+local://1.1.1.1/dns-query",
+            "localhost"
+        ]
+    },
+    "routing": {
+        "domainStrategy": "AsIs",
+        "strategy": "rules",
+        "rules": [
+            {
+                "type": "field",
+                "ip": [
+                    "geoip:private"
+                ],
+                "outboundTag": "block"
+            },
+            {
+                "type": "field",
+                "outboundTag": "block",
+                "domain": [
+                    "geosite:category-ads-all"
+                ]
+            },
+            {
+                "type": "field",
+                "outboundTag": "api",
+                "inboundTag": [
+                    "api"
+                ]
+            }
+        ]
+    },
+    "inbounds": [
+        {
+            "tag": "api",
+            "port": 999,
+            "listen": "207.148.103.112",
+            "protocol": "dokodemo-door",
+            "settings": {
+                "address": "207.148.103.112"
+            }
+        },
+        {
+            "tag": "proxy1",
+            "port": 8149,
+            "protocol": "trojan",
+            "settings": {
+                "clients": [
+                    {
+                        "password": "yanyangv@qq.com123",
+                        "flow": "xtls-rprx-direct",
+                        "level": 0,
+                        "email": "yanyangv@qq.com"
+                    },
+                    {
+                        "password": "spin@meou.ml123",
+                        "flow": "xtls-rprx-direct",
+                        "level": 0,
+                        "email": "spin@meou.ml"
+                    }
+                ],
+                "decryption": "none",
+                "fallbacks": [
+                    {
+                        "dest": 8080
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "tcp",
+                "security": "xtls",
+                "xtlsSettings": {
+                    "allowInsecure": false,
+                    "minVersion": "1.2",
+                    "alpn": [
+                        "http/1.1"
+                    ],
+                    "certificates": [
+                        {
+                            "certificateFile": "/usr/local/etc/xray/xray_cert/xray.crt",
+                            "keyFile": "/usr/local/etc/xray/xray_cert/xray.key"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "policy": {
+        "levels": {
+            "0": {
+                "statsUserUplink": true,
+                "statsUserDownlink": true
+            }
+        }
+    },
+    "outbounds": [
+        {
+            "tag": "direct",
+            "protocol": "freedom"
+        },
+        {
+            "tag": "block",
+            "protocol": "blackhole"
+        }
+    ]
+}
